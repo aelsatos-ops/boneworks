@@ -1,0 +1,35 @@
+name: Build liblar_menu.so
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r26b
+          add-to-path: false
+
+      - name: Build .so
+        run: |
+          $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android33-clang++ \
+            -shared -fPIC -O2 -std=c++17 \
+            -I$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include \
+            liblar_menu.cpp \
+            -o liblar_menu.so \
+            -llog -ldl
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liblar_menu
+          path: liblar_menu.so
